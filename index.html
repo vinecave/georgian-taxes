@@ -241,7 +241,7 @@
     </a>
 
     <div class="visitor-count">
-      <span class="vc-wave">👋</span> Join <span id="counter">...</span> others already using this template
+      <span class="vc-wave">👋</span> Join <span id="counter"></span> others already using this template
     </div>
 
     <div class="terms">
@@ -267,26 +267,25 @@
           async src="//gc.zgo.at/count.js"></script>
 
   <script>
-    (function() {
-      var el = document.getElementById('counter');
-      var req = new XMLHttpRequest();
-      req.open('GET', 'https://vinecave.goatcounter.com/counter/click-open-template.json');
-      req.onload = function() {
-        if (req.status === 200) {
-          try {
-            var data = JSON.parse(req.responseText);
-            el.textContent = data.count_unique || data.count || '-';
-          } catch(e) {}
-        }
-      };
-      req.send();
+    document.addEventListener('DOMContentLoaded', function() {
+      var btn = document.getElementById('ctaBtn');
+      if (btn) {
+        btn.addEventListener('click', function() {
+          if (window.goatcounter && window.goatcounter.count) {
+            window.goatcounter.count({ path: 'click-open-template', title: 'Open Template Click', event: true });
+          }
+        });
+      }
 
-      document.getElementById('ctaBtn').addEventListener('click', function() {
-        if (window.goatcounter && window.goatcounter.count) {
-          window.goatcounter.count({ path: 'click-open-template', title: 'Open Template Click', event: true });
+      function loadCount() {
+        if (window.goatcounter && window.goatcounter.visit_count) {
+          window.goatcounter.visit_count({ append: '#counter', type: 'html', path: 'click-open-template' });
+        } else {
+          setTimeout(loadCount, 200);
         }
-      });
-    })();
+      }
+      loadCount();
+    });
   </script>
 </body>
 </html>
