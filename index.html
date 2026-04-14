@@ -251,7 +251,7 @@
         <li>The script operates entirely within your own Google Sheet &mdash; it reads and writes only to that spreadsheet.</li>
         <li>The only external request the script makes is a query to the <a href="https://nbg.gov.ge" target="_blank" rel="noopener">National Bank of Georgia</a> public API to fetch exchange rates. No personal or financial data is included in that request.</li>
         <li>All your data stays in your Google account. Nothing is collected, tracked, or shared by the script.</li>
-        <li>This landing page uses <a href="https://www.goatcounter.com" target="_blank" rel="noopener">GoatCounter</a> for anonymous visitor counting. It does not use cookies, does not track personal data, and is fully GDPR-compliant. Only the page visit is counted.</li>
+        <li>This landing page uses <a href="https://www.goatcounter.com" target="_blank" rel="noopener">GoatCounter</a> for anonymous visitor and click counting. It does not use cookies, does not track personal data, and is fully GDPR-compliant. Only page visits and button clicks are counted.</li>
         <li>This tool is provided as-is, free of charge, with no warranty. You are responsible for verifying tax calculations before filing.</li>
       </ul>
     </div>
@@ -263,15 +263,14 @@
   </div>
 
   <!-- GoatCounter analytics — no cookies, GDPR-friendly -->
-  <script data-goatcounter="https://georgian-taxes.goatcounter.com/count"
+  <script data-goatcounter="https://vinecave.goatcounter.com/count"
           async src="//gc.zgo.at/count.js"></script>
 
   <script>
     (function() {
-      // Fetch visitor count for display
       var el = document.getElementById('counter');
       var req = new XMLHttpRequest();
-      req.open('GET', 'https://georgian-taxes.goatcounter.com/counter/' +
+      req.open('GET', 'https://vinecave.goatcounter.com/counter/' +
         encodeURIComponent(location.pathname || '/') + '.json');
       req.onload = function() {
         if (req.status === 200) {
@@ -283,7 +282,6 @@
       };
       req.send();
 
-      // Track CTA button clicks as a GoatCounter event
       document.getElementById('ctaBtn').addEventListener('click', function() {
         if (window.goatcounter && window.goatcounter.count) {
           window.goatcounter.count({ path: 'click-open-template', title: 'Open Template Click', event: true });
