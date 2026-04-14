@@ -277,14 +277,19 @@
         });
       }
 
-      function loadCount() {
-        if (window.goatcounter && window.goatcounter.visit_count) {
-          window.goatcounter.visit_count({ append: '#counter', type: 'html', path: 'click-open-template' });
-        } else {
-          setTimeout(loadCount, 200);
+      var el = document.getElementById('counter');
+      var req = new XMLHttpRequest();
+      req.open('GET', 'https://vinecave.goatcounter.com/counter/click-open-template.json');
+      req.onload = function() {
+        if (req.status === 200) {
+          try {
+            var data = JSON.parse(req.responseText);
+            el.textContent = data.count_unique || data.count || '';
+          } catch(e) { el.textContent = ''; }
         }
-      }
-      loadCount();
+      };
+      req.onerror = function() { el.textContent = ''; };
+      req.send();
     });
   </script>
 </body>
