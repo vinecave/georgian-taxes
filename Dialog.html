@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Google Sans', Roboto, Arial, sans-serif;
+      padding: 20px;
+      color: #202124;
+      font-size: 14px;
+    }
+    .field { margin-bottom: 16px; }
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 4px;
+      color: #5f6368;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    select, input[type="date"], input[type="number"], input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #dadce0;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #202124;
+      background: #fff;
+      transition: border-color 0.2s;
+    }
+    select:focus, input:focus {
+      outline: none;
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.15);
+    }
+    .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+    button {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-primary {
+      background: #1a73e8;
+      color: #fff;
+    }
+    .btn-primary:hover { background: #1557b0; }
+    .btn-primary:disabled {
+      background: #94c4f7;
+      cursor: not-allowed;
+    }
+    .btn-cancel {
+      background: #f1f3f4;
+      color: #5f6368;
+    }
+    .btn-cancel:hover { background: #dadce0; }
+    #status {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      display: none;
+    }
+    #status.success { display: block; background: #e6f4ea; color: #137333; }
+    #status.error { display: block; background: #fce8e6; color: #c5221f; }
+    #initialSumField { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="field">
+    <label for="month">Month</label>
+    <select id="month">
+      <option value="January">January</option>
+      <option value="February">February</option>
+      <option value="March">March</option>
+      <option value="April">April</option>
+      <option value="May">May</option>
+      <option value="June">June</option>
+      <option value="July">July</option>
+      <option value="August">August</option>
+      <option value="September">September</option>
+      <option value="October">October</option>
+      <option value="November">November</option>
+      <option value="December">December</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="incomeDate">Income Date</label>
+    <input type="date" id="incomeDate">
+  </div>
+
+  <div class="field">
+    <label for="currency">Currency</label>
+    <select id="currency">
+      <option value="GEL">GEL</option>
+      <option value="USD">USD</option>
+      <option value="EUR">EUR</option>
+      <option value="RUB">RUB</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="grossRevenue">Gross Revenue</label>
+    <input type="number" id="grossRevenue" step="0.01" min="0" placeholder="0.00">
+  </div>
+
+  <div class="field" id="initialSumField">
+    <label for="initialRunningSum">Initial Running Sum (GEL)</label>
+    <input type="number" id="initialRunningSum" step="0.01" min="0" placeholder="0.00"
+           title="Enter your existing revenue total to carry over from a prior period">
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-cancel" onclick="google.script.host.close()">Cancel</button>
+    <button class="btn-primary" id="submitBtn" onclick="submitForm()">Add Row</button>
+  </div>
+
+  <div id="status"></div>
+
+<script>
+  (function init() {
+    var today = new Date();
+    document.getElementById('incomeDate').value = today.toISOString().slice(0, 10);
+
+    var currentMonth = today.getMonth();
+    document.getElementById('month').selectedIndex = currentMonth;
+
+    google.script.run
+      .withSuccessHandler(function(isFirst) {
+        if (isFirst) {
+          document.getElementById('initialSumField').style.display = 'block';
+        }
+      })
+      .checkIfFirstRow();
+  })();
+
+  function submitForm() {
+    var status = document.getElementById('status');
+    var btn = document.getElementById('submitBtn');
+
+    var month = document.getElementById('month').value;
+    var incomeDate = document.getElementById('incomeDate').value;
+    var currency = document.getElementById('currency').value;
+    var grossRevenue = document.getElementById('grossRevenue').value;
+    var initialRunningSum = document.getElementById('initialRunningSum').value || '0';
+
+    if (!incomeDate || !grossRevenue || parseFloat(grossRevenue) <= 0) {
+      status.className = 'error';
+      status.textContent = 'Please fill in Income Date and a positive Gross Revenue.';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Adding...';
+    status.className = '';
+    status.style.display = 'none';
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        status.className = 'success';
+        status.textContent =
+          'Added: ' + result.amountGel + ' GEL | ' +
+          'Tax: ' + result.tax + ' | ' +
+          'Rate: ' + result.exchangeRate + ' | ' +
+          'Running Sum: ' + result.runningSum;
+        btn.disabled = false;
+        btn.textContent = 'Add Row';
+        document.getElementById('grossRevenue').value = '';
+        document.getElementById('initialSumField').style.display = 'none';
+      })
+      .withFailureHandler(function(err) {
+        status.className = 'error';
+        status.textContent = 'Error: ' + err.message;
+        btn.disabled = false;
+        btn.textContent = 'Add Row';
+      })
+      .addIncomeRow({
+        month: month,
+        incomeDate: incomeDate,
+        currency: currency,
+        grossRevenue: grossRevenue,
+        initialRunningSum: initialRunningSum
+      });
+  }
+</script>
+
+</body>
+</html>
