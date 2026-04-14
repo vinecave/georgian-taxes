@@ -270,8 +270,7 @@
     (function() {
       var el = document.getElementById('counter');
       var req = new XMLHttpRequest();
-      req.open('GET', 'https://vinecave.goatcounter.com/counter/' +
-        encodeURIComponent(location.pathname || '/') + '.json');
+      req.open('GET', 'https://vinecave.goatcounter.com/counter/click-open-template.json');
       req.onload = function() {
         if (req.status === 200) {
           try {
